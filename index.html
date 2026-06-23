@@ -1,0 +1,1905 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cocomelon Dash - Geometry Dash Adventure</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for cute icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        canvas {
+            image-rendering: pixelated;
+        }
+        /* Custom scrollbar for modern looks */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white flex flex-col items-center justify-center min-h-screen overflow-hidden p-2 md:p-4">
+
+    <!-- Primary Game Wrapper -->
+    <div class="relative w-full max-w-4xl bg-slate-800 rounded-3xl overflow-hidden shadow-2xl border-4 border-lime-400 flex flex-col">
+        
+        <!-- Top Header & Settings bar -->
+        <div class="bg-gradient-to-r from-lime-400 via-emerald-400 to-pink-400 p-3 flex justify-between items-center text-slate-900">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold tracking-wider drop-shadow-md flex items-center gap-1">
+                    🍉 COCOMELON DASH 🍉
+                </span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="musicToggleBtn" class="bg-white/80 hover:bg-white p-2 rounded-full w-10 h-10 flex items-center justify-center shadow-md transition transform hover:scale-105">
+                    <i id="musicIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+                <button id="helpBtn" class="bg-white/80 hover:bg-white p-2 rounded-full w-10 h-10 flex items-center justify-center shadow-md transition transform hover:scale-105">
+                    <i class="fa-solid fa-question"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Inner Game/Menu Container -->
+        <div class="relative w-full aspect-[16/9] bg-sky-200 overflow-hidden">
+            
+            <!-- Canvas Object -->
+            <canvas id="gameCanvas" class="w-full h-full block cursor-pointer"></canvas>
+
+            <!-- Main Menu Overlay -->
+            <div id="mainMenu" class="absolute inset-0 flex flex-col items-center justify-between p-6 bg-gradient-to-b from-sky-400/90 via-emerald-400/80 to-lime-400/90 text-slate-900 transition-all duration-300">
+                <!-- Mascot TV Heading -->
+                <div class="flex flex-col items-center mt-4 animate-bounce">
+                    <div class="relative bg-emerald-500 border-4 border-pink-400 w-24 h-20 rounded-2xl flex items-center justify-center shadow-xl">
+                        <!-- TV Antennas -->
+                        <div class="absolute -top-6 left-4 w-1 h-6 bg-slate-700 origin-bottom transform rotate-12"></div>
+                        <div class="absolute -top-8 left-2 w-3 h-3 bg-pink-400 rounded-full"></div>
+                        <div class="absolute -top-6 right-4 w-1 h-6 bg-slate-700 origin-bottom transform -rotate-12"></div>
+                        <div class="absolute -top-8 right-2 w-3 h-3 bg-yellow-400 rounded-full"></div>
+                        <!-- Screen -->
+                        <div class="bg-yellow-100 w-20 h-16 rounded-lg flex flex-col items-center justify-center p-1 border-2 border-slate-800">
+                            <!-- Happy Face -->
+                            <div class="flex gap-4 mb-1">
+                                <span class="w-2 h-2 bg-slate-800 rounded-full"></span>
+                                <span class="w-2 h-2 bg-slate-800 rounded-full"></span>
+                            </div>
+                            <div class="w-6 h-2 border-b-2 border-slate-800 rounded-b-full"></div>
+                        </div>
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-black mt-2 text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-widest text-center">
+                        COCOMELON DASH
+                    </h1>
+                    <p class="text-sm md:text-base font-semibold text-slate-800 bg-white/60 px-3 py-1 rounded-full mt-2">
+                        A rhythmic kid-friendly high-speed adventure!
+                    </p>
+                </div>
+
+                <!-- Mid Selection: Level & Character -->
+                <div class="w-full flex flex-col md:flex-row gap-4 items-center justify-center my-2 max-w-2xl">
+                    <!-- Skin Selector Box -->
+                    <div class="bg-white/95 p-4 rounded-2xl shadow-xl flex flex-col items-center w-full md:w-1/2 border-2 border-pink-300">
+                        <h3 class="font-bold text-slate-700 text-sm uppercase mb-2"><i class="fa-solid fa-user-astronaut mr-1"></i> Choose Your Character</h3>
+                        <div class="flex gap-2 justify-center items-center py-2" id="skinTrack">
+                            <!-- Skins filled by JS -->
+                        </div>
+                        <div id="selectedSkinName" class="text-pink-600 font-black text-lg mt-1">Cocomelon TV</div>
+                    </div>
+
+                    <!-- Level Selector Box -->
+                    <div class="bg-white/95 p-4 rounded-2xl shadow-xl flex flex-col items-center w-full md:w-1/2 border-2 border-lime-500">
+                        <h3 class="font-bold text-slate-700 text-sm uppercase mb-2"><i class="fa-solid fa-route mr-1"></i> Select Track</h3>
+                        <div class="flex flex-col gap-2 w-full" id="levelTrackSelect">
+                            <!-- Track Options filled by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button Cluster -->
+                <div class="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md mb-4">
+                    <!-- Normal Mode -->
+                    <button id="playBtn" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-black text-2xl py-4 px-6 rounded-2xl shadow-[0_6px_0_#9f1239] hover:shadow-[0_4px_0_#9f1239] transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-play text-3xl"></i> PLAY GAME
+                    </button>
+                    <!-- Practice Mode Toggle -->
+                    <button id="practiceModeToggleBtn" class="sm:w-1/3 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-lg py-4 px-3 rounded-2xl shadow-[0_6px_0_#b45309] hover:shadow-[0_4px_0_#b45309] transition-all transform hover:-translate-y-1 active:translate-y-0 flex flex-col items-center justify-center leading-none">
+                        <span class="text-xs uppercase">Mode</span>
+                        <span id="practiceStatus" class="font-black text-rose-700 mt-1">NORMAL</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- In-game Hud & Practice controls overlay -->
+            <div id="gameHud" class="absolute inset-x-0 top-0 p-4 flex justify-between items-start pointer-events-none hidden">
+                <div class="flex flex-col gap-1 pointer-events-auto">
+                    <!-- Current Score/Percent -->
+                    <div class="bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-xl font-bold text-lg flex items-center gap-2">
+                        <span class="text-yellow-400">Progress:</span>
+                        <span id="hudPercentage" class="text-white">0%</span>
+                    </div>
+                    <!-- Mode Label -->
+                    <div id="hudModeBadge" class="bg-rose-500/95 text-white font-black px-2 py-0.5 rounded-lg text-xs tracking-wider self-start uppercase">
+                        Normal Mode
+                    </div>
+                </div>
+
+                <!-- Center High Bar -->
+                <div class="absolute left-1/2 transform -translate-x-1/2 top-4 w-1/3 bg-black/40 h-4 rounded-full overflow-hidden border border-white/20">
+                    <div id="hudProgressBar" class="h-full bg-gradient-to-r from-lime-400 to-emerald-400 w-0 transition-all duration-100"></div>
+                </div>
+
+                <!-- HUD Buttons -->
+                <div class="flex gap-2 pointer-events-auto">
+                    <!-- Menu Button -->
+                    <button id="hudMenuBtn" class="bg-black/60 hover:bg-black text-white p-2 rounded-xl flex items-center justify-center w-10 h-10">
+                        <i class="fa-solid fa-house"></i>
+                    </button>
+                    <!-- Restart Button -->
+                    <button id="hudRestartBtn" class="bg-rose-500 hover:bg-rose-600 text-white p-2 rounded-xl flex items-center justify-center w-10 h-10">
+                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Practice Action Bar (Bottom Overlay) -->
+            <div id="practiceBar" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-md px-6 py-3 rounded-2xl border-2 border-amber-400 flex items-center gap-4 text-white hidden">
+                <div class="text-sm font-bold flex flex-col items-start leading-none gap-0.5">
+                    <span class="text-amber-400 uppercase text-[10px]">Practice Mode Active</span>
+                    <span>Set/Use Flags:</span>
+                </div>
+                <button id="placeCheckpointBtn" class="bg-emerald-500 hover:bg-emerald-600 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
+                    <i class="fa-solid fa-flag"></i> Add Flag (Z)
+                </button>
+                <button id="removeCheckpointBtn" class="bg-rose-500 hover:bg-rose-600 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
+                    <i class="fa-solid fa-trash-can"></i> Remove Last (X)
+                </button>
+            </div>
+
+            <!-- Game Over / Victory Overlay -->
+            <div id="finishScreen" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 text-center transition-all duration-300 hidden">
+                <div class="bg-white text-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border-8 border-lime-400 relative">
+                    <!-- Emoji top mascot -->
+                    <div id="finishEmoji" class="text-6xl absolute -top-12 left-1/2 transform -translate-x-1/2 bg-lime-400 rounded-full w-20 h-20 flex items-center justify-center shadow-lg border-4 border-white animate-bounce">
+                        🎉
+                    </div>
+
+                    <h2 id="finishTitle" class="text-3xl font-black text-emerald-600 mt-4 uppercase">Level Complete!</h2>
+                    <p id="finishMessage" class="text-slate-600 font-semibold mt-2">Amazing skills! You made JJ proud!</p>
+                    
+                    <!-- Stats Card -->
+                    <div class="bg-slate-100 rounded-2xl p-4 my-6 flex flex-col gap-2 text-left">
+                        <div class="flex justify-between font-bold text-sm text-slate-500">
+                            <span>Track:</span>
+                            <span id="finishTrackName" class="text-slate-900 font-bold">JJ's Nursery</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-sm text-slate-500">
+                            <span>Attempt Progress:</span>
+                            <span id="finishPercent" class="text-emerald-500 font-bold">100%</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-sm text-slate-500">
+                            <span>Total Jumps:</span>
+                            <span id="finishJumps" class="text-indigo-600 font-bold">12</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-sm text-slate-500">
+                            <span>Total Crashes:</span>
+                            <span id="finishCrashes" class="text-rose-600 font-bold">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Button grid -->
+                    <div class="flex gap-4">
+                        <button id="finishMenuBtn" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl transition">
+                            <i class="fa-solid fa-house mr-1"></i> Menu
+                        </button>
+                        <button id="finishRetryBtn" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-black py-3 px-4 rounded-xl shadow-[0_4px_0_#9f1239] hover:shadow-none transition transform hover:scale-[1.02]">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Modals / Floating controls info -->
+            <div id="helpModal" class="absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-6 hidden">
+                <div class="bg-white text-slate-900 rounded-3xl p-6 max-w-md w-full relative border-4 border-pink-400">
+                    <button id="closeHelpBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-2xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <h3 class="text-2xl font-black text-pink-500 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-gamepad"></i> How to Play
+                    </h3>
+                    <div class="space-y-3 font-semibold text-slate-700 text-sm text-left">
+                        <p class="flex items-center gap-2">
+                            <span class="w-8 h-8 bg-lime-100 rounded-full flex items-center justify-center text-lime-600 font-bold">1</span>
+                            Tap the Screen or press **SPACEBAR / UP** to Jump.
+                        </p>
+                        <p class="flex items-center gap-2">
+                            <span class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold">2</span>
+                            Avoid colorful spikes, obstacles, and pits!
+                        </p>
+                        <p class="flex items-center gap-2">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">3</span>
+                            Hit yellow Glowing Orbs in the air to bounce higher.
+                        </p>
+                        <p class="flex items-center gap-2">
+                            <span class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold">4</span>
+                            In **Practice Mode**, drop Flags (Z key) to save locations!
+                        </p>
+                    </div>
+                    <button id="closeHelpBtnOk" class="mt-6 w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl">
+                        Got it! Let's Dash
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer Help/Info message -->
+        <div class="bg-slate-700 p-3 text-center text-slate-400 text-xs flex justify-between items-center px-6">
+            <span>💡 Tap anywhere, Spacebar, or Up Arrow to jump!</span>
+            <span class="font-bold text-lime-400">Kid-safe & Highly Addictive Adventure</span>
+        </div>
+    </div>
+
+    <!-- Web Audio API Synthesizer Implementation and Game Logic Script -->
+    <script>
+        // --- CONSTANTS AND GLOBALS ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Virtual internal coordinate spaces
+        const VIEW_WIDTH = 1280;
+        const VIEW_HEIGHT = 720;
+
+        // Custom theme colors for backgrounds & levels
+        const THEMES = {
+            nursery: {
+                sky: '#bae6fd',       // Sky blue
+                hillDistant: '#86efac', // Light mint green
+                hillClose: '#4ade80',   // Medium mint green
+                ground: '#22c55e',      // Strong lime ground
+                obst: '#f43f5e'         // Pink Obstacles
+            },
+            hillside: {
+                sky: '#fbcfe8',       // Pastel Pink
+                hillDistant: '#a7f3d0', // Emerald pastel
+                hillClose: '#34d399',   // Close emerald
+                ground: '#10b981',      // Emerald green ground
+                obst: '#8b5cf6'         // Purple Obstacles
+            },
+            dino: {
+                sky: '#fef08a',       // Soft Yellow
+                hillDistant: '#fed7aa', // Light Orange
+                hillClose: '#fb923c',   // Vibrant Orange
+                ground: '#f97316',      // Dark Orange
+                obst: '#2563eb'         // Strong Blue Obstacles
+            }
+        };
+
+        // --- SKINS DICTIONARY ---
+        const SKINS = [
+            {
+                id: 'tv',
+                name: 'Cocomelon TV',
+                color: '#22c55e', // Green stripes
+                draw: (ctx, x, y, size, rotation, tick) => {
+                    ctx.save();
+                    ctx.translate(x + size / 2, y + size / 2);
+                    ctx.rotate(rotation);
+
+                    // Outer body shadow
+                    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                    ctx.fillRect(-size/2 + 2, -size/2 + 2, size, size);
+
+                    // Outer body - Watermelon-striped green
+                    ctx.fillStyle = '#15803d'; // Dark Green
+                    ctx.beginPath();
+                    ctx.roundRect(-size/2, -size/2, size, size, 12);
+                    ctx.fill();
+
+                    // Stripes
+                    ctx.fillStyle = '#22c55e'; // Light green
+                    for(let i = -size/2 + 8; i < size/2; i += 16) {
+                        ctx.fillRect(i, -size/2, 4, size);
+                    }
+
+                    // Face Screen (Yellowish-cream)
+                    ctx.fillStyle = '#fef08a';
+                    ctx.beginPath();
+                    ctx.roundRect(-size/2 + 6, -size/2 + 6, size - 12, size - 12, 8);
+                    ctx.fill();
+
+                    // Rosy cheeks
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.beginPath();
+                    ctx.arc(-size/4, size/6, 5, 0, Math.PI * 2);
+                    ctx.arc(size/4, size/6, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Eyes (beady black)
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.arc(-size/4 + 2, -size/10, 4, 0, Math.PI * 2);
+                    ctx.arc(size/4 - 2, -size/10, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Smiling mouth
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size/5, 0, Math.PI);
+                    ctx.stroke();
+
+                    // Tiny Ladybug sitting on side
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(size/3, -size/3, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(size/3 + 2, -size/3 - 2, 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Antennas (wiggling based on tick)
+                    const wiggle = Math.sin(tick * 0.15) * 0.15;
+                    ctx.strokeStyle = '#334155';
+                    ctx.lineWidth = 3;
+                    // Left antenna
+                    ctx.beginPath();
+                    ctx.moveTo(-size/3, -size/2);
+                    ctx.lineTo(-size/3 - 6 + wiggle * 5, -size/2 - 12);
+                    ctx.stroke();
+                    ctx.fillStyle = '#db2777'; // Pink tip
+                    ctx.beginPath();
+                    ctx.arc(-size/3 - 6 + wiggle * 5, -size/2 - 14, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Right antenna
+                    ctx.beginPath();
+                    ctx.moveTo(size/3, -size/2);
+                    ctx.lineTo(size/3 + 6 - wiggle * 5, -size/2 - 12);
+                    ctx.stroke();
+                    ctx.fillStyle = '#f59e0b'; // Yellow tip
+                    ctx.beginPath();
+                    ctx.arc(size/3 + 6 - wiggle * 5, -size/2 - 14, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            },
+            {
+                id: 'jj',
+                name: 'Baby JJ',
+                color: '#38bdf8', // Blue onesie
+                draw: (ctx, x, y, size, rotation, tick) => {
+                    ctx.save();
+                    ctx.translate(x + size / 2, y + size / 2);
+                    ctx.rotate(rotation);
+
+                    // Blue onesie base
+                    ctx.fillStyle = '#0ea5e9';
+                    ctx.beginPath();
+                    ctx.roundRect(-size/2, -size/2, size, size, 14);
+                    ctx.fill();
+
+                    // Inner cute round baby face
+                    ctx.fillStyle = '#ffedd5';
+                    ctx.beginPath();
+                    ctx.arc(0, -2, size/2.3, 0, Math.PI*2);
+                    ctx.fill();
+
+                    // Large sweet cartoon eyes
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(-10, -5, 8, 0, Math.PI*2);
+                    ctx.arc(10, -5, 8, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#0284c7'; // Blue pupil
+                    ctx.beginPath();
+                    ctx.arc(-10, -5, 5, 0, Math.PI*2);
+                    ctx.arc(10, -5, 5, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000'; // Black core
+                    ctx.beginPath();
+                    ctx.arc(-10, -5, 2, 0, Math.PI*2);
+                    ctx.arc(10, -5, 2, 0, Math.PI*2);
+                    ctx.fill();
+
+                    // Baby Swirly Blonde Curl (JJ's iconic lock of hair)
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -size/2 + 2);
+                    ctx.quadraticCurveTo(-10, -size/2 - 8, 2, -size/2 - 14);
+                    ctx.stroke();
+
+                    // Rosy checks
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.globalAlpha = 0.4;
+                    ctx.beginPath();
+                    ctx.arc(-16, 4, 5, 0, Math.PI*2);
+                    ctx.arc(16, 4, 5, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
+
+                    // Smile
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(0, 3, 6, 0.1, Math.PI - 0.1);
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+            },
+            {
+                id: 'cody',
+                name: 'Cody Dino',
+                color: '#fb923c', // Green/Orange dinosaur hood
+                draw: (ctx, x, y, size, rotation, tick) => {
+                    ctx.save();
+                    ctx.translate(x + size / 2, y + size / 2);
+                    ctx.rotate(rotation);
+
+                    // Green dino hood base
+                    ctx.fillStyle = '#16a34a';
+                    ctx.beginPath();
+                    ctx.roundRect(-size/2, -size/2, size, size, 15);
+                    ctx.fill();
+
+                    // Dino horns/spikes along top
+                    ctx.fillStyle = '#facc15'; // yellow horns
+                    ctx.beginPath();
+                    ctx.moveTo(-16, -size/2);
+                    ctx.lineTo(-10, -size/2 - 8);
+                    ctx.lineTo(-4, -size/2);
+                    ctx.moveTo(4, -size/2);
+                    ctx.lineTo(10, -size/2 - 8);
+                    ctx.lineTo(16, -size/2);
+                    ctx.fill();
+
+                    // Cutout face (Cody's sweet brown skin)
+                    ctx.fillStyle = '#7c2d12';
+                    ctx.beginPath();
+                    ctx.roundRect(-size/2 + 8, -size/2 + 10, size - 16, size - 16, 10);
+                    ctx.fill();
+
+                    // Big cute black-rim glasses (Cody's glasses)
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(-10, -3, 8, 0, Math.PI*2);
+                    ctx.arc(10, -3, 8, 0, Math.PI*2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(-2, -3);
+                    ctx.lineTo(2, -3);
+                    ctx.stroke();
+
+                    // Happy eyes inside glasses
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(-10, -3, 3, 0, Math.PI*2);
+                    ctx.arc(10, -3, 3, 0, Math.PI*2);
+                    ctx.fill();
+
+                    // Smile
+                    ctx.strokeStyle = '#ffedd5';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 8, 5, 0, Math.PI);
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+            },
+            {
+                id: 'watermelon',
+                name: 'Watermelon Slice',
+                color: '#f43f5e', // Pink & Green slice
+                draw: (ctx, x, y, size, rotation, tick) => {
+                    ctx.save();
+                    ctx.translate(x + size / 2, y + size / 2);
+                    ctx.rotate(rotation);
+
+                    // Outer dark green rind
+                    ctx.fillStyle = '#16a34a';
+                    ctx.beginPath();
+                    ctx.arc(0, -6, size/2, 0, Math.PI);
+                    ctx.fill();
+
+                    // Inner pink/red flesh
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.beginPath();
+                    ctx.arc(0, -6, size/2.3, 0, Math.PI);
+                    ctx.fill();
+
+                    // Watermelon seeds (black dots)
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(-10, 8, 2, 4);
+                    ctx.fillRect(10, 8, 2, 4);
+                    ctx.fillRect(0, 14, 2, 4);
+
+                    // Happy eyes
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(-8, 0, 4, 0, Math.PI*2);
+                    ctx.arc(8, 0, 4, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(-8, 0, 2, 0, Math.PI*2);
+                    ctx.arc(8, 0, 2, 0, Math.PI*2);
+                    ctx.fill();
+
+                    // Smiling mouth
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 3, 3, 0, Math.PI);
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+            }
+        ];
+
+        // --- LEVELS SPECIFICATION ---
+        // GD layouts represented as lists of entities.
+        // x coordinates mapped. Platforms/spikes.
+        // Elements: 
+        //   's': Spike
+        //   'b': Solid Block
+        //   'o': Jump Orb (click when overlapping to multi-jump)
+        //   'p': Jump Pad (automatic big boost when stepped on)
+        //   'f': Finish Flag
+        const LEVELS = [
+            {
+                id: 'level1',
+                title: "JJ's Nursery Room",
+                theme: 'nursery',
+                bpm: 130,
+                songId: 'cocomelonTheme',
+                data: [
+                    {type: 'b', x: 500, y: 550},
+                    {type: 's', x: 700, y: 600},
+                    {type: 'b', x: 900, y: 550},
+                    {type: 'b', x: 950, y: 550},
+                    {type: 's', x: 1200, y: 600},
+                    {type: 's', x: 1400, y: 600},
+                    // Dual jumping test
+                    {type: 'b', x: 1600, y: 500},
+                    {type: 'b', x: 1660, y: 500},
+                    {type: 's', x: 1630, y: 500},
+                    {type: 'b', x: 1850, y: 550},
+                    {type: 'o', x: 2000, y: 440}, // Jump Orb
+                    {type: 's', x: 2000, y: 600},
+                    {type: 'b', x: 2200, y: 500},
+                    {type: 'b', x: 2400, y: 400},
+                    {type: 'p', x: 2600, y: 600}, // Pad
+                    {type: 's', x: 2800, y: 600},
+                    {type: 's', x: 2840, y: 600},
+                    {type: 'b', x: 3000, y: 550},
+                    {type: 'b', x: 3200, y: 500},
+                    {type: 'b', x: 3400, y: 450},
+                    {type: 's', x: 3400, y: 600},
+                    {type: 'o', x: 3600, y: 350},
+                    {type: 'b', x: 3800, y: 500},
+                    {type: 's', x: 3950, y: 600},
+                    {type: 's', x: 4100, y: 600},
+                    {type: 'f', x: 4400, y: 600} // Winner!
+                ]
+            },
+            {
+                id: 'level2',
+                title: "Watermelon Hillside",
+                theme: 'hillside',
+                bpm: 140,
+                songId: 'wheelsOnBus',
+                data: [
+                    {type: 's', x: 450, y: 600},
+                    {type: 'b', x: 600, y: 550},
+                    {type: 'b', x: 660, y: 550},
+                    {type: 's', x: 800, y: 600},
+                    {type: 's', x: 950, y: 600},
+                    {type: 'p', x: 1100, y: 600},
+                    {type: 'b', x: 1300, y: 400},
+                    {type: 'b', x: 1360, y: 400},
+                    {type: 's', x: 1550, y: 600},
+                    {type: 'o', x: 1700, y: 450},
+                    {type: 'b', x: 1850, y: 480},
+                    {type: 's', x: 1850, y: 600},
+                    {type: 'b', x: 2050, y: 400},
+                    {type: 's', x: 2200, y: 600},
+                    {type: 's', x: 2240, y: 600},
+                    {type: 'b', x: 2400, y: 500},
+                    {type: 'b', x: 2460, y: 500},
+                    {type: 'o', x: 2650, y: 380},
+                    {type: 'b', x: 2800, y: 450},
+                    {type: 's', x: 2950, y: 600},
+                    {type: 'p', x: 3100, y: 600},
+                    {type: 'b', x: 3300, y: 350},
+                    {type: 's', x: 3450, y: 600},
+                    {type: 's', x: 3600, y: 600},
+                    {type: 'o', x: 3750, y: 400},
+                    {type: 'b', x: 3900, y: 500},
+                    {type: 'b', x: 4000, y: 450},
+                    {type: 's', x: 4150, y: 600},
+                    {type: 's', x: 4300, y: 600},
+                    {type: 'f', x: 4600, y: 600}
+                ]
+            },
+            {
+                id: 'level3',
+                title: "Cody's Dino Road",
+                theme: 'dino',
+                bpm: 150,
+                songId: 'yesYesVeg',
+                data: [
+                    {type: 's', x: 400, y: 600},
+                    {type: 's', x: 550, y: 600},
+                    {type: 'b', x: 700, y: 500},
+                    {type: 's', x: 700, y: 600},
+                    {type: 'b', x: 850, y: 420},
+                    {type: 's', x: 1000, y: 600},
+                    {type: 'o', x: 1150, y: 450},
+                    {type: 'b', x: 1300, y: 480},
+                    {type: 's', x: 1450, y: 600},
+                    {type: 's', x: 1490, y: 600},
+                    {type: 'p', x: 1650, y: 600},
+                    {type: 'b', x: 1850, y: 380},
+                    {type: 'b', x: 1910, y: 380},
+                    {type: 's', x: 2100, y: 600},
+                    {type: 'o', x: 2250, y: 450},
+                    {type: 'b', x: 2400, y: 420},
+                    {type: 's', x: 2400, y: 600},
+                    {type: 'b', x: 2550, y: 350},
+                    {type: 's', x: 2700, y: 600},
+                    {type: 's', x: 2750, y: 600},
+                    {type: 'b', x: 2900, y: 500},
+                    {type: 'o', x: 3050, y: 380},
+                    {type: 'b', x: 3200, y: 400},
+                    {type: 'p', x: 3400, y: 600},
+                    {type: 'b', x: 3600, y: 300},
+                    {type: 'b', x: 3660, y: 300},
+                    {type: 's', x: 3850, y: 600},
+                    {type: 's', x: 3900, y: 600},
+                    {type: 'o', x: 4050, y: 420},
+                    {type: 'b', x: 4200, y: 500},
+                    {type: 's', x: 4350, y: 600},
+                    {type: 'f', x: 4700, y: 600}
+                ]
+            }
+        ];
+
+        // --- WEB AUDIO API MUSIC & SFX SYNTHESIZER ---
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.masterVolume = null;
+                this.currentSequencer = null;
+                this.muted = false;
+                this.tempo = 140;
+                this.notes = {
+                    'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
+                    'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'B5': 987.77, 'C6': 1046.50
+                };
+            }
+
+            init() {
+                if (this.ctx) return;
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    this.masterVolume = this.ctx.createGain();
+                    this.masterVolume.gain.value = 0.25; // Balanced volume
+                    this.masterVolume.connect(this.ctx.destination);
+                } catch(e) {
+                    console.warn("Web Audio API not supported", e);
+                }
+            }
+
+            setMute(muteState) {
+                this.muted = muteState;
+                if (this.masterVolume) {
+                    this.masterVolume.gain.value = this.muted ? 0 : 0.25;
+                }
+            }
+
+            playJump() {
+                if (!this.ctx || this.muted) this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.masterVolume);
+
+                osc.type = 'triangle';
+                const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+
+            playCrash() {
+                if (!this.ctx || this.muted) this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.masterVolume);
+
+                osc.type = 'sawtooth';
+                const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(60, now + 0.4);
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+
+            playOrbBounce() {
+                if (!this.ctx || this.muted) this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.masterVolume);
+
+                osc.type = 'sine';
+                const now = this.ctx.currentTime;
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.2);
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+
+            playVictory() {
+                if (!this.ctx || this.muted) this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const notes = ['C5', 'E5', 'G5', 'C6'];
+                notes.forEach((note, index) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(this.masterVolume);
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(this.notes[note], now + index * 0.12);
+                    gain.gain.setValueAtTime(0.2, now + index * 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + index * 0.12 + 0.25);
+                    
+                    osc.start(now + index * 0.12);
+                    osc.stop(now + index * 0.12 + 0.25);
+                });
+            }
+
+            // High tempo synth sequencer of Nursery rhymes
+            startSong(songId, bpm) {
+                this.init();
+                this.stopSong();
+                if (!this.ctx || this.muted) return;
+
+                this.tempo = bpm || 140;
+                const stepDuration = 60 / this.tempo / 2; // 8th notes
+
+                let melody = [];
+                if (songId === 'cocomelonTheme') {
+                    // Cocomelon sound jingle - high pitch arcade style
+                    melody = [
+                        'G4', 'E4', 'G4', 'C5', 'C5', 'D5', 'E5', 'F5', 'G5', 'G5', 'A5', 'G5', 'F5', 'E5', 'D5', 'C5',
+                        'G4', 'E4', 'G4', 'C5', 'C5', 'D5', 'E5', 'F5', 'G5', 'C6', 'B5', 'A5', 'G5', 'A5', 'B5', 'C6'
+                    ];
+                } else if (songId === 'wheelsOnBus') {
+                    // Wheels on the Bus remix
+                    melody = [
+                        'C4', 'F4', 'F4', 'F4', 'F4', 'A4', 'C5', 'A4', 'F4', 'G4', 'G4', 'G4', 'E4', 'C4', 'G4', 'A4',
+                        'C4', 'F4', 'F4', 'F4', 'F4', 'A4', 'C5', 'C5', 'D5', 'C5', 'B4', 'A4', 'G4', 'F4', 'F4', 'F4'
+                    ];
+                } else {
+                    // Yes Yes Vegetables remix
+                    melody = [
+                        'E4', 'E4', 'G4', 'E4', 'D4', 'D4', 'C4', 'C4', 'E4', 'E4', 'G4', 'G4', 'A4', 'A4', 'G4', 'G4',
+                        'C5', 'C5', 'A4', 'A4', 'F4', 'F4', 'D4', 'D4', 'B4', 'B4', 'G4', 'G4', 'E4', 'D4', 'C4', 'C4'
+                    ];
+                }
+
+                let step = 0;
+                const scheduleNext = () => {
+                    if (!this.currentSequencer) return;
+
+                    const now = this.ctx.currentTime;
+                    const noteName = melody[step % melody.length];
+                    const freq = this.notes[noteName];
+
+                    if (freq) {
+                        // Play primary pulse melody oscillator
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.masterVolume);
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now);
+                        
+                        gain.gain.setValueAtTime(0.18, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + stepDuration * 0.9);
+
+                        osc.start(now);
+                        osc.stop(now + stepDuration);
+
+                        // Add a playful baseline on key notes
+                        if (step % 2 === 0) {
+                            const subOsc = this.ctx.createOscillator();
+                            const subGain = this.ctx.createGain();
+                            subOsc.connect(subGain);
+                            subGain.connect(this.masterVolume);
+                            subOsc.type = 'sawtooth';
+                            subOsc.frequency.setValueAtTime(freq / 2, now);
+                            
+                            subGain.gain.setValueAtTime(0.12, now);
+                            subGain.gain.exponentialRampToValueAtTime(0.01, now + stepDuration * 1.5);
+
+                            subOsc.start(now);
+                            subOsc.stop(now + stepDuration * 1.5);
+                        }
+                    }
+
+                    step++;
+                    // Schedule next note precisely
+                    this.currentSequencer = setTimeout(scheduleNext, stepDuration * 1000);
+                };
+
+                this.currentSequencer = setTimeout(scheduleNext, 50);
+            }
+
+            stopSong() {
+                if (this.currentSequencer) {
+                    clearTimeout(this.currentSequencer);
+                    this.currentSequencer = null;
+                }
+            }
+        }
+
+        const sounds = new SoundEngine();
+
+        // --- GAME CONTROLLER & PHYSICS CLASS ---
+        class GameEngine {
+            constructor() {
+                this.state = 'menu'; // 'menu', 'playing', 'finished'
+                this.score = 0;
+                this.selectedSkinIndex = 0;
+                this.selectedLevelIndex = 0;
+                this.isPracticeMode = false;
+                this.jumpsCount = 0;
+                this.crashesCount = 0;
+
+                // Physics values
+                this.gravity = 1.3;
+                this.terminalVelocity = 22;
+
+                // Game speed scroll variables
+                this.speedMultiplier = 1.0;
+                this.baseSpeed = 9.0;
+                this.cameraX = 0;
+
+                // Player physics values
+                this.player = {
+                    x: 200,
+                    y: 600,
+                    vy: 0,
+                    size: 55,
+                    rotation: 0,
+                    targetRotation: 0,
+                    isGrounded: false,
+                    jumpForce: -21,
+                    padJumpForce: -29,
+                    isDead: false,
+                    trail: []
+                };
+
+                this.levelData = [];
+                this.checkpoints = []; // Stores flags in practice mode
+                this.particles = [];
+                this.decorations = []; // Clouds, background stars, flowers
+
+                this.groundY = 600; // Y line for ground
+                this.tick = 0;
+
+                this.initDecorations();
+            }
+
+            initDecorations() {
+                this.decorations = [];
+                // Generate 8 cute happy clouds
+                for (let i = 0; i < 8; i++) {
+                    this.decorations.push({
+                        type: 'cloud',
+                        x: Math.random() * VIEW_WIDTH,
+                        y: 80 + Math.random() * 150,
+                        speed: 0.1 + Math.random() * 0.3,
+                        size: 60 + Math.random() * 40,
+                        bounceOffset: Math.random() * 100
+                    });
+                }
+                // Generate colorful decorative stars floating in background
+                for (let i = 0; i < 15; i++) {
+                    this.decorations.push({
+                        type: 'star',
+                        x: Math.random() * VIEW_WIDTH,
+                        y: 50 + Math.random() * 300,
+                        size: 5 + Math.random() * 8,
+                        color: ['#fef08a', '#fbcfe8', '#bfdbfe', '#bbf7d0'][Math.floor(Math.random() * 4)]
+                    });
+                }
+            }
+
+            getCurrentLevel() {
+                return LEVELS[this.selectedLevelIndex];
+            }
+
+            getCurrentTheme() {
+                const currentLevel = this.getCurrentLevel();
+                return THEMES[currentLevel.theme];
+            }
+
+            startLevel() {
+                const currentLevel = this.getCurrentLevel();
+                this.state = 'playing';
+                this.cameraX = 0;
+                this.jumpsCount = 0;
+                this.crashesCount = 0;
+
+                // Soft reset player
+                this.player.x = 200;
+                this.player.y = this.groundY - this.player.size;
+                this.player.vy = 0;
+                this.player.rotation = 0;
+                this.player.targetRotation = 0;
+                this.player.isGrounded = true;
+                this.player.isDead = false;
+                this.player.trail = [];
+
+                // Load Obstacles
+                this.levelData = JSON.parse(JSON.stringify(currentLevel.data));
+                
+                // Clear state
+                this.checkpoints = [];
+                this.particles = [];
+
+                // Music engine initiation
+                sounds.startSong(currentLevel.songId, currentLevel.bpm);
+
+                // UI adjustments
+                document.getElementById('mainMenu').classList.add('hidden');
+                document.getElementById('gameHud').classList.remove('hidden');
+                document.getElementById('finishScreen').classList.add('hidden');
+
+                if (this.isPracticeMode) {
+                    document.getElementById('practiceBar').classList.remove('hidden');
+                    document.getElementById('hudModeBadge').innerText = "Practice Mode";
+                    document.getElementById('hudModeBadge').className = "bg-amber-400 text-slate-900 font-black px-2 py-0.5 rounded-lg text-xs tracking-wider self-start uppercase";
+                } else {
+                    document.getElementById('practiceBar').classList.add('hidden');
+                    document.getElementById('hudModeBadge').innerText = "Normal Mode";
+                    document.getElementById('hudModeBadge').className = "bg-rose-500 text-white font-black px-2 py-0.5 rounded-lg text-xs tracking-wider self-start uppercase";
+                }
+            }
+
+            triggerJump() {
+                if (this.player.isDead || this.state !== 'playing') return;
+
+                if (this.player.isGrounded) {
+                    this.player.vy = this.player.jumpForce;
+                    this.player.isGrounded = false;
+                    this.player.targetRotation += Math.PI / 2; // Flip 90 degrees forward
+                    this.jumpsCount++;
+                    sounds.playJump();
+                    this.spawnJumpDust();
+                } else {
+                    // Check if player is overlapping with any glowing jump orbs to perform mid-air bounce
+                    this.levelData.forEach(item => {
+                        if (item.type === 'o' && !item.used) {
+                            // Calculate player distance to orb center
+                            const dx = (this.player.x + this.player.size / 2) - item.x;
+                            const dy = (this.player.y + this.player.size / 2) - item.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < 90) { // overlap threshold
+                                item.used = true;
+                                this.player.vy = this.player.jumpForce * 0.95;
+                                this.player.targetRotation += Math.PI; // Full flip!
+                                sounds.playOrbBounce();
+                                this.spawnOrbBurst(item.x, item.y);
+                                this.jumpsCount++;
+                            }
+                        }
+                    });
+                }
+            }
+
+            spawnJumpDust() {
+                for (let i = 0; i < 8; i++) {
+                    this.particles.push({
+                        x: this.player.x + Math.random() * this.player.size,
+                        y: this.player.y + this.player.size,
+                        vx: -2 - Math.random() * 4,
+                        vy: -1 - Math.random() * 2,
+                        size: 5 + Math.random() * 6,
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        life: 1.0,
+                        decay: 0.05
+                    });
+                }
+            }
+
+            spawnOrbBurst(x, y) {
+                // Sparking ring particles
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2;
+                    const speed = 4 + Math.random() * 3;
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: 6 + Math.random() * 8,
+                        color: '#fbbf24', // Yellow gold glow
+                        life: 1.0,
+                        decay: 0.04
+                    });
+                }
+            }
+
+            addPracticeCheckpoint() {
+                if (!this.isPracticeMode || this.player.isDead) return;
+                // Add a cute little flag state
+                this.checkpoints.push({
+                    x: this.player.x,
+                    y: this.player.y,
+                    vy: this.player.vy,
+                    rotation: this.player.rotation,
+                    cameraX: this.cameraX,
+                    grounded: this.player.isGrounded
+                });
+                
+                // Spawn nice little flag particles
+                for (let i = 0; i < 6; i++) {
+                    this.particles.push({
+                        x: this.player.x,
+                        y: this.player.y,
+                        vx: -1 + Math.random() * 2,
+                        vy: -4 - Math.random() * 3,
+                        size: 6,
+                        color: '#4ade80', // Green checkpoint flag
+                        life: 1.0,
+                        decay: 0.05
+                    });
+                }
+            }
+
+            removeLastPracticeCheckpoint() {
+                if (this.checkpoints.length > 0) {
+                    this.checkpoints.pop();
+                }
+            }
+
+            crashPlayer() {
+                if (this.player.isDead) return;
+                this.player.isDead = true;
+                this.crashesCount++;
+                sounds.playCrash();
+
+                // Spark beautiful baby/watermelon explosion particles!
+                const skin = SKINS[this.selectedSkinIndex];
+                const expColors = [skin.color, '#f43f5e', '#ffffff', '#e2e8f0', '#fbbf24'];
+                for (let i = 0; i < 28; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 3 + Math.random() * 8;
+                    this.particles.push({
+                        x: this.player.x + this.player.size / 2,
+                        y: this.player.y + this.player.size / 2,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: 8 + Math.random() * 12,
+                        color: expColors[Math.floor(Math.random() * expColors.length)],
+                        life: 1.0,
+                        decay: 0.02 + Math.random() * 0.03
+                    });
+                }
+
+                // Pause sequence before instant respawning
+                setTimeout(() => {
+                    this.respawn();
+                }, 750);
+            }
+
+            respawn() {
+                if (this.isPracticeMode && this.checkpoints.length > 0) {
+                    // Respawn at the last saved flag
+                    const cp = this.checkpoints[this.checkpoints.length - 1];
+                    this.player.x = cp.x;
+                    this.player.y = cp.y;
+                    this.player.vy = cp.vy;
+                    this.player.rotation = cp.rotation;
+                    this.player.targetRotation = cp.rotation;
+                    this.player.isGrounded = cp.grounded;
+                    this.cameraX = cp.cameraX;
+                    this.player.isDead = false;
+                    this.player.trail = [];
+                } else {
+                    // Fully restart the track
+                    this.startLevel();
+                }
+            }
+
+            finishLevel() {
+                this.state = 'finished';
+                sounds.stopSong();
+                sounds.playVictory();
+
+                const currentLevel = this.getCurrentLevel();
+
+                // Build happy confetti particles
+                for (let i = 0; i < 60; i++) {
+                    this.particles.push({
+                        x: VIEW_WIDTH / 2 + (Math.random() - 0.5) * 400,
+                        y: 100 + Math.random() * 100,
+                        vx: -3 + Math.random() * 6,
+                        vy: -2 - Math.random() * 5,
+                        size: 10 + Math.random() * 12,
+                        color: ['#f43f5e', '#10b981', '#3b82f6', '#fbbf24', '#a855f7'][Math.floor(Math.random() * 5)],
+                        life: 1.5,
+                        decay: 0.015
+                    });
+                }
+
+                // Populate Level Stats Modal UI
+                document.getElementById('finishTrackName').innerText = currentLevel.title;
+                document.getElementById('finishPercent').innerText = "100% COMPLETE!";
+                document.getElementById('finishJumps').innerText = this.jumpsCount;
+                document.getElementById('finishCrashes').innerText = this.crashesCount;
+
+                document.getElementById('gameHud').classList.add('hidden');
+                document.getElementById('practiceBar').classList.add('hidden');
+                document.getElementById('finishScreen').classList.remove('hidden');
+            }
+
+            // --- THE UPDATE LOOP ---
+            update() {
+                this.tick++;
+
+                // Animate background elements independently of game play
+                this.decorations.forEach(dec => {
+                    if (dec.type === 'cloud') {
+                        dec.x -= dec.speed;
+                        if (dec.x < -dec.size * 2) dec.x = VIEW_WIDTH + dec.size;
+                    }
+                });
+
+                if (this.state !== 'playing') {
+                    // Menu scene or finish scene updates
+                    this.updateParticlesOnly();
+                    return;
+                }
+
+                const currentLevel = this.getCurrentLevel();
+
+                if (!this.player.isDead) {
+                    // Drive automatic horizontal scrolling speed
+                    const currentSpeed = this.baseSpeed * this.speedMultiplier;
+                    this.player.x += currentSpeed;
+                    this.cameraX = this.player.x - 200; // Track screen offset
+
+                    // Gravity & Vertical movement
+                    this.player.vy += this.gravity;
+                    if (this.player.vy > this.terminalVelocity) {
+                        this.player.vy = this.terminalVelocity;
+                    }
+                    this.player.y += this.player.vy;
+
+                    // Smooth/Rhythmic rotational alignment
+                    if (!this.player.isGrounded) {
+                        // Slowly spin the character cube as they sail through the air
+                        this.player.rotation += 0.085;
+                    } else {
+                        // Align back to grid angles (multiples of 90 degrees or PI/2)
+                        const closestPivot = Math.round(this.player.rotation / (Math.PI / 2)) * (Math.PI / 2);
+                        this.player.rotation += (closestPivot - this.player.rotation) * 0.25;
+                    }
+
+                    // Lower bounds (Ground floor collision)
+                    const floorY = this.groundY - this.player.size;
+                    if (this.player.y >= floorY) {
+                        this.player.y = floorY;
+                        this.player.vy = 0;
+                        if (!this.player.isGrounded) {
+                            this.player.isGrounded = true;
+                            this.spawnJumpDust();
+                        }
+                    }
+
+                    // Save rainbow visual trail positions
+                    this.player.trail.push({x: this.player.x, y: this.player.y + this.player.size / 2});
+                    if (this.player.trail.length > 25) {
+                        this.player.trail.shift();
+                    }
+
+                    // --- OBSTACLE & EVENT COLLISION RESOLUTION ---
+                    const pLeft = this.player.x;
+                    const pRight = this.player.x + this.player.size;
+                    const pTop = this.player.y;
+                    const pBottom = this.player.y + this.player.size;
+
+                    // Compute overall level distance percentage
+                    const startX = 200;
+                    const endItem = this.levelData.find(item => item.type === 'f');
+                    const totalX = endItem ? (endItem.x - startX) : 4000;
+                    const currentProgressX = Math.min(Math.max(this.player.x - startX, 0), totalX);
+                    const progressPercent = Math.floor((currentProgressX / totalX) * 100);
+
+                    // Update HUD Progress
+                    document.getElementById('hudPercentage').innerText = `${progressPercent}%`;
+                    document.getElementById('hudProgressBar').style.width = `${progressPercent}%`;
+
+                    this.levelData.forEach(item => {
+                        // Process entities close to camera to optimize performance
+                        if (Math.abs(item.x - this.player.x) < 400) {
+                            
+                            // 1. Spikes Collision
+                            if (item.type === 's') {
+                                // Draw spike box (AABB bounds mapping the triangle)
+                                const sLeft = item.x + 8;
+                                const sRight = item.x + 50 - 8;
+                                const sTop = item.y + 15;
+                                const sBottom = item.y + 55;
+
+                                if (pRight > sLeft && pLeft < sRight && pBottom > sTop && pTop < sBottom) {
+                                    this.crashPlayer();
+                                }
+                            }
+
+                            // 2. Solid Block Collision
+                            if (item.type === 'b') {
+                                const bLeft = item.x;
+                                const bRight = item.x + 60;
+                                const bTop = item.y;
+                                const bBottom = item.y + 60;
+
+                                if (pRight > bLeft && pLeft < bRight && pBottom > bTop && pTop < bBottom) {
+                                    // Land on top?
+                                    if (this.player.vy > 0 && (pBottom - this.player.vy) <= bTop + 8) {
+                                        this.player.y = bTop - this.player.size;
+                                        this.player.vy = 0;
+                                        this.player.isGrounded = true;
+                                    } else {
+                                        // Crashed face first into block side!
+                                        this.crashPlayer();
+                                    }
+                                }
+                            }
+
+                            // 3. Jump Pad Collision
+                            if (item.type === 'p') {
+                                const padLeft = item.x;
+                                const padRight = item.x + 60;
+                                const padTop = item.y + 30; // Pads are flat
+                                const padBottom = item.y + 60;
+
+                                if (pRight > padLeft && pLeft < padRight && pBottom > padTop && pTop < padBottom) {
+                                    // Step triggered boost jump
+                                    this.player.vy = this.player.padJumpForce;
+                                    this.player.isGrounded = false;
+                                    this.player.targetRotation += Math.PI;
+                                    sounds.playOrbBounce();
+                                    this.spawnOrbBurst(item.x + 30, item.y + 40);
+                                    this.jumpsCount++;
+                                }
+                            }
+
+                            // 4. Finish Flag Triggered
+                            if (item.type === 'f') {
+                                if (this.player.x >= item.x) {
+                                    this.finishLevel();
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Update existing active particles
+                this.particles.forEach((p, idx) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= p.decay;
+                    if (p.life <= 0) {
+                        this.particles.splice(idx, 1);
+                    }
+                });
+            }
+
+            updateParticlesOnly() {
+                this.particles.forEach((p, idx) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= p.decay;
+                    if (p.life <= 0) {
+                        this.particles.splice(idx, 1);
+                    }
+                });
+            }
+
+            // --- THE RENDER LOOP ---
+            draw() {
+                ctx.clearRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+                
+                const theme = this.getCurrentTheme();
+
+                // 1. Draw sky background (Static or light parallax)
+                ctx.fillStyle = theme.sky;
+                ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+                // Draw background stars
+                this.decorations.forEach(dec => {
+                    if (dec.type === 'star') {
+                        ctx.fillStyle = dec.color;
+                        ctx.beginPath();
+                        ctx.arc(dec.x, dec.y, dec.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+
+                // 2. Draw Rolling Hills Layers (Beautiful Cocomelon themed rounded paths)
+                // Distant layer (Slow movement)
+                ctx.fillStyle = theme.hillDistant;
+                ctx.beginPath();
+                ctx.moveTo(0, VIEW_HEIGHT);
+                ctx.quadraticCurveTo(VIEW_WIDTH * 0.25, 300, VIEW_WIDTH * 0.5, 450);
+                ctx.quadraticCurveTo(VIEW_WIDTH * 0.75, 350, VIEW_WIDTH, 420);
+                ctx.lineTo(VIEW_WIDTH, VIEW_HEIGHT);
+                ctx.fill();
+
+                // Closer layer
+                ctx.fillStyle = theme.hillClose;
+                ctx.beginPath();
+                ctx.moveTo(0, VIEW_HEIGHT);
+                ctx.quadraticCurveTo(VIEW_WIDTH * 0.3, 400, VIEW_WIDTH * 0.6, 520);
+                ctx.quadraticCurveTo(VIEW_WIDTH * 0.85, 460, VIEW_WIDTH, 500);
+                ctx.lineTo(VIEW_WIDTH, VIEW_HEIGHT);
+                ctx.fill();
+
+                // Draw Clouds
+                this.decorations.forEach(dec => {
+                    if (dec.type === 'cloud') {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                        const wobbleY = Math.sin(this.tick * 0.02 + dec.bounceOffset) * 6;
+                        // Draw compound arcs
+                        ctx.beginPath();
+                        ctx.arc(dec.x, dec.y + wobbleY, dec.size * 0.5, 0, Math.PI * 2);
+                        ctx.arc(dec.x + dec.size * 0.4, dec.y - 10 + wobbleY, dec.size * 0.45, 0, Math.PI * 2);
+                        ctx.arc(dec.x - dec.size * 0.4, dec.y - 5 + wobbleY, dec.size * 0.4, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Smile on some clouds
+                        if (dec.size > 80) {
+                            ctx.strokeStyle = '#94a3b8';
+                            ctx.lineWidth = 2.5;
+                            ctx.beginPath();
+                            ctx.arc(dec.x, dec.y + 10 + wobbleY, 8, 0, Math.PI);
+                            ctx.stroke();
+                        }
+                    }
+                });
+
+                // 3. Translate world viewport to scroll camera
+                ctx.save();
+                ctx.translate(-this.cameraX, 0);
+
+                // --- DRAW LEVEL ENVIRONMENT TRACKS ---
+                // Ground Grid line & stripes
+                ctx.fillStyle = theme.ground;
+                ctx.fillRect(this.cameraX, this.groundY, VIEW_WIDTH, VIEW_HEIGHT - this.groundY);
+
+                // Stripe detail pattern on ground
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                const startStripeX = Math.floor(this.cameraX / 80) * 80;
+                for (let sx = startStripeX; sx < this.cameraX + VIEW_WIDTH + 80; sx += 80) {
+                    ctx.fillRect(sx, this.groundY, 40, VIEW_HEIGHT - this.groundY);
+                }
+
+                // Ground edge line
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(this.cameraX, this.groundY);
+                ctx.lineTo(this.cameraX + VIEW_WIDTH, this.groundY);
+                ctx.stroke();
+
+                // Draw placed flags in Practice Mode
+                this.checkpoints.forEach((cp, idx) => {
+                    ctx.save();
+                    ctx.translate(cp.x, cp.y + 15);
+                    // Draw little green flagstick
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 40);
+                    ctx.lineTo(0, 0);
+                    ctx.stroke();
+                    // Flag triangle
+                    ctx.fillStyle = '#4ade80';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(18, 8);
+                    ctx.lineTo(0, 16);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // 4. Draw Rainbow Trail behind player
+                if (this.player.trail.length > 1 && !this.player.isDead) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.5;
+                    const colors = ['#f43f5e', '#f59e0b', '#eab308', '#22c55e', '#3b82f6'];
+                    for (let i = 0; i < this.player.trail.length - 1; i++) {
+                        const pt1 = this.player.trail[i];
+                        const pt2 = this.player.trail[i + 1];
+                        ctx.strokeStyle = colors[i % colors.length];
+                        ctx.lineWidth = 14 * (i / this.player.trail.length); // Tapers off
+                        ctx.beginPath();
+                        ctx.moveTo(pt1.x, pt1.y);
+                        ctx.lineTo(pt2.x, pt2.y);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // 5. Draw level data items (spikes, blocks, orbs)
+                this.levelData.forEach(item => {
+                    // Cocomelon styling on items
+                    if (item.type === 's') {
+                        // Drawing Spike as colorful building block triangular spike
+                        ctx.save();
+                        ctx.translate(item.x + 30, item.y + 30);
+                        
+                        // Dark red shadow
+                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                        ctx.beginPath();
+                        ctx.moveTo(-25, 30);
+                        ctx.lineTo(0, -30);
+                        ctx.lineTo(25, 30);
+                        ctx.fill();
+
+                        // Main spike body
+                        ctx.fillStyle = theme.obst;
+                        ctx.beginPath();
+                        ctx.moveTo(-28, 30);
+                        ctx.lineTo(0, -28);
+                        ctx.lineTo(28, 30);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // Add yellow tip cap
+                        ctx.fillStyle = '#fef08a';
+                        ctx.beginPath();
+                        ctx.moveTo(-10, 8);
+                        ctx.lineTo(0, -28);
+                        ctx.lineTo(10, 8);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.restore();
+                    }
+
+                    if (item.type === 'b') {
+                        // Block (Represented as toy blocks with letter 'A', 'B', 'C')
+                        ctx.save();
+                        ctx.translate(item.x, item.y);
+                        
+                        // Outer body base
+                        ctx.fillStyle = '#f59e0b'; // Gold yellow base
+                        ctx.beginPath();
+                        ctx.roundRect(0, 0, 60, 60, 10);
+                        ctx.fill();
+
+                        // Inner border
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.roundRect(4, 4, 52, 52, 8);
+                        ctx.stroke();
+
+                        // Letter A, B, C based on X coord hash
+                        const letters = ['A', 'B', 'C', '1', '2', '3'];
+                        const text = letters[Math.floor(item.x / 100) % letters.length];
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 28px "Fredoka", sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(text, 30, 30);
+
+                        ctx.restore();
+                    }
+
+                    if (item.type === 'o') {
+                        // Glowing Air Jump Orbs
+                        ctx.save();
+                        ctx.translate(item.x, item.y);
+                        
+                        // Inner glow circle
+                        const pulse = Math.sin(this.tick * 0.1) * 6;
+                        ctx.fillStyle = item.used ? 'rgba(251, 191, 36, 0.2)' : 'rgba(251, 191, 36, 0.4)';
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 30 + pulse, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Core ring
+                        ctx.strokeStyle = item.used ? '#d97706' : '#fbbf24';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 18, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        ctx.restore();
+                    }
+
+                    if (item.type === 'p') {
+                        // Launch pads on the ground
+                        ctx.save();
+                        ctx.translate(item.x, item.y);
+
+                        // Base plate
+                        ctx.fillStyle = '#475569';
+                        ctx.beginPath();
+                        ctx.roundRect(0, 45, 60, 15, 4);
+                        ctx.fill();
+
+                        // Launch arrow
+                        ctx.fillStyle = '#10b981'; // green
+                        ctx.beginPath();
+                        ctx.moveTo(30, 10);
+                        ctx.lineTo(10, 45);
+                        ctx.lineTo(50, 45);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // Arrow inner stripe
+                        ctx.fillStyle = '#a7f3d0';
+                        ctx.beginPath();
+                        ctx.moveTo(30, 20);
+                        ctx.lineTo(20, 40);
+                        ctx.lineTo(40, 40);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.restore();
+                    }
+
+                    if (item.type === 'f') {
+                        // Level Final flagpost
+                        ctx.save();
+                        ctx.translate(item.x, item.y);
+
+                        // Golden shiny base
+                        ctx.fillStyle = '#facc15';
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 20, 0, Math.PI, true);
+                        ctx.fill();
+
+                        // High pole
+                        ctx.strokeStyle = '#94a3b8';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(0, -180);
+                        ctx.stroke();
+
+                        // Large cute checkered flag or solid pink Cocomelon flag
+                        ctx.fillStyle = '#ec4899';
+                        ctx.beginPath();
+                        ctx.moveTo(0, -180);
+                        ctx.lineTo(60, -150);
+                        ctx.lineTo(0, -120);
+                        ctx.fill();
+
+                        // Little ladybug sticker in flag
+                        ctx.fillStyle = '#0f172a';
+                        ctx.beginPath();
+                        ctx.arc(15, -150, 3, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.restore();
+                    }
+                });
+
+                // 6. Draw Player Character (using customizable selected skin)
+                if (!this.player.isDead) {
+                    const skin = SKINS[this.selectedSkinIndex];
+                    skin.draw(ctx, this.player.x, this.player.y, this.player.size, this.player.rotation, this.tick);
+                }
+
+                // 7. Draw Visual FX / Particles
+                this.particles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    // Rect or circle based on speed/size
+                    if (p.size > 8) {
+                        ctx.roundRect(p.x, p.y, p.size, p.size, p.size / 3);
+                        ctx.fill();
+                    } else {
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                });
+
+                ctx.restore(); // end world viewport camera mapping
+            }
+        }
+
+        // --- INSTANTIATE GAME ---
+        const game = new GameEngine();
+
+        // --- RENDERING CANVAS AUTOFIT SCALE SYSTEM ---
+        function handleResize() {
+            const container = canvas.parentElement;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // Set scale factors relative to 1280x720 canvas
+            canvas.width = VIEW_WIDTH;
+            canvas.height = VIEW_HEIGHT;
+        }
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Init
+
+        // --- USER CONTROLS & EVENT LISTENERS ---
+
+        // Support triggers for both jump actions
+        function makeJumpAction() {
+            if (game.state === 'menu') {
+                game.startLevel();
+            } else if (game.state === 'playing') {
+                game.triggerJump();
+            }
+        }
+
+        // Key listeners
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                e.preventDefault();
+                makeJumpAction();
+            }
+            if (e.code === 'KeyZ') {
+                // Save Flag
+                game.addPracticeCheckpoint();
+            }
+            if (e.code === 'KeyX') {
+                // Delete Last Flag
+                game.removeLastPracticeCheckpoint();
+            }
+        });
+
+        // Click or Tap everywhere on canvas to play/jump
+        canvas.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            makeJumpAction();
+        });
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            makeJumpAction();
+        }, { passive: false });
+
+        // --- SKIN SELECTOR UI LISTENER ---
+        const skinTrack = document.getElementById('skinTrack');
+        SKINS.forEach((skin, index) => {
+            const btn = document.createElement('button');
+            btn.className = `w-14 h-14 rounded-2xl flex items-center justify-center border-4 ${index === 0 ? 'border-lime-400 bg-lime-100 scale-110 shadow-lg' : 'border-slate-300 bg-white hover:bg-slate-100'} transition transform hover:scale-105 select-none`;
+            btn.id = `skin-btn-${index}`;
+            
+            // Render skin mini SVG directly to look beautiful
+            btn.innerHTML = `
+                <svg width="40" height="40" viewBox="0 0 60 60">
+                    <rect x="5" y="5" width="50" height="50" rx="10" fill="${skin.color}"/>
+                    <circle cx="20" cy="20" r="4" fill="#fff"/>
+                    <circle cx="40" cy="20" r="4" fill="#fff"/>
+                    <circle cx="20" cy="20" r="2" fill="#000"/>
+                    <circle cx="40" cy="20" r="2" fill="#000"/>
+                    <path d="M 20 38 Q 30 48 40 38" stroke="#000" stroke-width="3" fill="none"/>
+                </svg>
+            `;
+            btn.addEventListener('click', () => selectSkin(index));
+            skinTrack.appendChild(btn);
+        });
+
+        function selectSkin(index) {
+            // Reset active styles
+            SKINS.forEach((_, idx) => {
+                const b = document.getElementById(`skin-btn-${idx}`);
+                b.className = `w-14 h-14 rounded-2xl flex items-center justify-center border-4 ${idx === index ? 'border-lime-400 bg-lime-100 scale-110 shadow-lg' : 'border-slate-300 bg-white hover:bg-slate-100'} transition transform hover:scale-105 select-none`;
+            });
+            game.selectedSkinIndex = index;
+            document.getElementById('selectedSkinName').innerText = SKINS[index].name;
+            sounds.playJump();
+        }
+
+        // --- LEVEL SELECTOR UI LISTENER ---
+        const levelSelectContainer = document.getElementById('levelTrackSelect');
+        LEVELS.forEach((level, index) => {
+            const row = document.createElement('button');
+            row.className = `w-full text-left p-3 rounded-xl flex justify-between items-center border-2 ${index === 0 ? 'bg-lime-50 border-lime-400 text-lime-900' : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800'} transition font-bold select-none`;
+            row.id = `level-row-${index}`;
+            
+            // Diff star icons helper
+            let stars = '';
+            for(let s = 0; s <= index; s++) {
+                stars += '<i class="fa-solid fa-star text-amber-400 text-xs mr-0.5"></i>';
+            }
+
+            row.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="text-sm font-black">${level.title}</span>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-wide">BPM: ${level.bpm} • ${index === 0 ? 'Easy' : index === 1 ? 'Medium' : 'Hard'}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${stars}
+                </div>
+            `;
+            row.addEventListener('click', () => selectLevel(index));
+            levelSelectContainer.appendChild(row);
+        });
+
+        function selectLevel(index) {
+            LEVELS.forEach((_, idx) => {
+                const r = document.getElementById(`level-row-${idx}`);
+                r.className = `w-full text-left p-3 rounded-xl flex justify-between items-center border-2 ${idx === index ? 'bg-lime-50 border-lime-400 text-lime-900' : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800'} transition font-bold select-none`;
+            });
+            game.selectedLevelIndex = index;
+            sounds.playOrbBounce();
+        }
+
+        // --- HUD ACTIONS CONTROLLERS ---
+        document.getElementById('hudMenuBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.state = 'menu';
+            sounds.stopSong();
+            document.getElementById('mainMenu').classList.remove('hidden');
+            document.getElementById('gameHud').classList.add('hidden');
+            document.getElementById('practiceBar').classList.add('hidden');
+        });
+
+        document.getElementById('hudRestartBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.startLevel();
+        });
+
+        // --- FINISH SCREEN BUTTONS ---
+        document.getElementById('finishMenuBtn').addEventListener('click', () => {
+            game.state = 'menu';
+            document.getElementById('mainMenu').classList.remove('hidden');
+            document.getElementById('finishScreen').classList.add('hidden');
+        });
+
+        document.getElementById('finishRetryBtn').addEventListener('click', () => {
+            game.startLevel();
+        });
+
+        // --- PRACTICE MODE SELECTOR ---
+        const practiceBtn = document.getElementById('practiceModeToggleBtn');
+        const practiceStatus = document.getElementById('practiceStatus');
+        practiceBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.isPracticeMode = !game.isPracticeMode;
+            if (game.isPracticeMode) {
+                practiceStatus.innerText = "PRACTICE";
+                practiceStatus.className = "font-black text-emerald-600 mt-1";
+                practiceBtn.className = "sm:w-1/3 bg-emerald-100 hover:bg-emerald-200 text-slate-900 font-bold text-lg py-4 px-3 rounded-2xl shadow-[0_6px_0_#059669] hover:shadow-[0_4px_0_#059669] transition-all transform hover:-translate-y-1 active:translate-y-0 flex flex-col items-center justify-center leading-none";
+            } else {
+                practiceStatus.innerText = "NORMAL";
+                practiceStatus.className = "font-black text-rose-700 mt-1";
+                practiceBtn.className = "sm:w-1/3 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-lg py-4 px-3 rounded-2xl shadow-[0_6px_0_#b45309] hover:shadow-[0_4px_0_#b45309] transition-all transform hover:-translate-y-1 active:translate-y-0 flex flex-col items-center justify-center leading-none";
+            }
+            sounds.playJump();
+        });
+
+        // Practice bar HUD buttons
+        document.getElementById('placeCheckpointBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.addPracticeCheckpoint();
+        });
+        document.getElementById('removeCheckpointBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            game.removeLastPracticeCheckpoint();
+        });
+
+        // --- MUSIC / VOLUME TETHER ---
+        const musicToggleBtn = document.getElementById('musicToggleBtn');
+        const musicIcon = document.getElementById('musicIcon');
+        musicToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sounds.muted = !sounds.muted;
+            if (sounds.muted) {
+                musicIcon.className = "fa-solid fa-volume-xmark text-rose-500";
+                sounds.setMute(true);
+                sounds.stopSong();
+            } else {
+                musicIcon.className = "fa-solid fa-volume-high text-emerald-600";
+                sounds.setMute(false);
+                if (game.state === 'playing') {
+                    const currentLevel = game.getCurrentLevel();
+                    sounds.startSong(currentLevel.songId, currentLevel.bpm);
+                }
+            }
+        });
+
+        // --- HELP / HOW TO PLAY MODAL ---
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const closeHelpBtn = document.getElementById('closeHelpBtn');
+        const closeHelpBtnOk = document.getElementById('closeHelpBtnOk');
+
+        helpBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            helpModal.classList.remove('hidden');
+        });
+        closeHelpBtn.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+        });
+        closeHelpBtnOk.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+        });
+
+        // Main game controller trigger
+        document.getElementById('playBtn').addEventListener('click', () => {
+            game.startLevel();
+        });
+
+        // --- MAIN ANIMATION ANIMATE ENGINE LOOP ---
+        function mainLoop() {
+            game.update();
+            game.draw();
+            requestAnimationFrame(mainLoop);
+        }
+
+        // Wait for page resources to load securely
+        window.onload = function () {
+            handleResize();
+            requestAnimationFrame(mainLoop);
+        }
+    </script>
+</body>
+</html>
+
+```
